@@ -1,8 +1,8 @@
 package com.krjaken.wtf.core.life.sleep.coma;
 
 import com.krjaken.wtf.core.curiosity.CuriosityCore;
-import com.krjaken.wtf.core.interaces.WtfController;
 import com.krjaken.wtf.core.memory.MemoryService;
+import com.krjaken.wtf.interaces.WtfController;
 import org.springframework.stereotype.Controller;
 
 @Controller

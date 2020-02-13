@@ -1,4 +1,4 @@
-package com.krjaken.wtf.core.interaces;
+package com.krjaken.wtf.interaces;
 
 public interface WtfService {
     public void init();

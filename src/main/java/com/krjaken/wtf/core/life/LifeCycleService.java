@@ -1,9 +1,10 @@
 package com.krjaken.wtf.core.life;
 
+import com.krjaken.wtf.api.WtfRestApiService;
 import com.krjaken.wtf.core.curiosity.CuriosityCore;
-import com.krjaken.wtf.core.interaces.WtfService;
 import com.krjaken.wtf.core.life.sleep.SleepingService;
 import com.krjaken.wtf.core.life.wake.WakingService;
+import com.krjaken.wtf.interaces.WtfService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -13,13 +14,16 @@ public class LifeCycleService implements WtfService {
     private WakingService wakingService;
     private SleepingService sleepingService;
     private CuriosityCore curiosityCore;
+    private WtfRestApiService wtfRestApiService;
 
     public LifeCycleService(WakingService wakingService,
                             SleepingService sleepingService,
-                            CuriosityCore curiosityCore) {
+                            CuriosityCore curiosityCore,
+                            WtfRestApiService wtfRestApiService) {
         this.wakingService = wakingService;
         this.sleepingService = sleepingService;
         this.curiosityCore = curiosityCore;
+        this.wtfRestApiService = wtfRestApiService;
         init();
     }
 
@@ -28,16 +32,20 @@ public class LifeCycleService implements WtfService {
         log.info("startLifeCycle");
         wakingService.wakeUp();
         curiosityCore.init();
+
+        wtfRestApiService.init();
     }
 
     @Override
     public void down() {
         log.info("endLifeCycle");
+        wtfRestApiService.down();
         sleepingService.sleep();
         sleepingService.coma();
     }
 
     public void death() {
+        wtfRestApiService.down();
         sleepingService.coma();
     }
 }

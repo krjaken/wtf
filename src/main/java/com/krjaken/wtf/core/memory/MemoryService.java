@@ -1,6 +1,6 @@
 package com.krjaken.wtf.core.memory;
 
-import com.krjaken.wtf.core.interaces.WtfService;
+import com.krjaken.wtf.interaces.WtfService;
 import org.springframework.stereotype.Service;
 
 @Service
