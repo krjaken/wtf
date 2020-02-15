@@ -1,32 +1,36 @@
 package com.krjaken.wtf.api;
 
-import com.krjaken.wtf.core.curiosity.CuriosityCore;
-import com.krjaken.wtf.core.life.LifeCycleService;
 import com.krjaken.wtf.core.memory.MemoryService;
-import com.krjaken.wtf.interaces.WtfService;
-import org.springframework.stereotype.Service;
+import com.krjaken.wtf.core.memory.db.dtos.LanguageDto;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Service
-public class WtfRestApiService implements WtfService {
+import java.util.List;
+
+
+@RestController
+@RequestMapping("/api/v1")
+public class WtfRestApiService {
     private MemoryService memoryService;
-    private CuriosityCore curiosityCore;
-    private LifeCycleService lifeCycleService;
 
-    public WtfRestApiService(MemoryService memoryService,
-                             CuriosityCore curiosityCore,
-                             LifeCycleService lifeCycleService){
+    public WtfRestApiService(MemoryService memoryService) {
         this.memoryService = memoryService;
-        this.curiosityCore = curiosityCore;
-        this.lifeCycleService = lifeCycleService;
     }
 
-    @Override
-    public void init() {
-        //todo
+    @ApiOperation(value = "View a list of available employees", response = List.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieved list"),
+            @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+            @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+            @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+    })
+    @GetMapping("/languages")
+    public List<LanguageDto> getAllEmployees() {
+        return memoryService.findAll();
     }
 
-    @Override
-    public void down() {
-        //todo
-    }
 }

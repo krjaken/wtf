@@ -32,20 +32,16 @@ public class LifeCycleService implements WtfService {
         log.info("startLifeCycle");
         wakingService.wakeUp();
         curiosityCore.init();
-
-        wtfRestApiService.init();
     }
 
     @Override
     public void down() {
         log.info("endLifeCycle");
-        wtfRestApiService.down();
         sleepingService.sleep();
         sleepingService.coma();
     }
 
     public void death() {
-        wtfRestApiService.down();
         sleepingService.coma();
     }
 }
