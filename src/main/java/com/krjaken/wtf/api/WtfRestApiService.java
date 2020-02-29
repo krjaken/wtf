@@ -5,13 +5,14 @@ import com.krjaken.wtf.core.memory.db.dtos.LanguageDto;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-
+@Slf4j
 @RestController
 @RequestMapping("/api/v1")
 public class WtfRestApiService {
@@ -30,6 +31,7 @@ public class WtfRestApiService {
     })
     @GetMapping("/languages")
     public List<LanguageDto> getAllEmployees() {
+        log.info("getAllEmployees");
         return memoryService.findAll();
     }
 

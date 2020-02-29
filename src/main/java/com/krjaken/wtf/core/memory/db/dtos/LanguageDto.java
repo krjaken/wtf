@@ -1,15 +1,8 @@
 package com.krjaken.wtf.core.memory.db.dtos;
 
-import lombok.Setter;
+import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-@Setter
-@Entity
-@Table(name = "lenguages")
+@Data
 public class LanguageDto {
     private Long id;
     private String lenguage_eng;
@@ -22,22 +15,6 @@ public class LanguageDto {
         this.id = id;
         this.lenguage_eng = lenguage_eng;
         this.lenguage_original = lenguage_original;
-    }
-
-    @Id
-    @Column(name = "id")
-    public long getId() {
-        return id;
-    }
-
-    @Column(name = "lenguage_eng", nullable = false)
-    public String getLenguage_eng() {
-        return lenguage_eng;
-    }
-
-    @Column(name = "lenguage_original", nullable = false)
-    public String getLenguage_original() {
-        return lenguage_original;
     }
 
     @Override
