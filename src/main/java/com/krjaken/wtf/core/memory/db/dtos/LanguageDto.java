@@ -1,10 +1,15 @@
 package com.krjaken.wtf.core.memory.db.dtos;
 
 import lombok.Data;
+import org.neo4j.ogm.annotation.NodeEntity;
+import org.neo4j.ogm.annotation.Property;
 
 @Data
+@NodeEntity("Language")
 public class LanguageDto {
+    @Property("eng")
     private String lenguage_eng;
+    @Property("origin")
     private String lenguage_original;
 
     public LanguageDto() {

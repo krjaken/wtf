@@ -38,10 +38,18 @@ public class WtfRestApiService {
             @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
             @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
     })
-    @GetMapping("/languages")
-    public List<LanguageDto> getAllEmployees() {
+    @GetMapping("/getLanguages")
+    public ResponseEntity<List<LanguageDto>> getAllEmployees() {
         log.info("getAllEmployees");
-        return memoryService.findAll();
+
+        List<LanguageDto> languages;
+        try {
+            languages = memoryService.getLanguages();
+        } catch (Exception e) {
+            return new ResponseEntity("Find languages error", HttpStatus.CONFLICT);
+        }
+
+        return new ResponseEntity<List<LanguageDto>>(languages, HttpStatus.OK);
     }
 
     @PutMapping("/putLenguage")

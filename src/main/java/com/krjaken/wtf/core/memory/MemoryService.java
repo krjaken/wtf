@@ -1,5 +1,7 @@
 package com.krjaken.wtf.core.memory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krjaken.wtf.api.core.enums.LanguageEnum;
 import com.krjaken.wtf.core.memory.db.dtos.LanguageDto;
 import com.krjaken.wtf.core.memory.db.neo4j.Neo4JController;
@@ -19,16 +21,28 @@ import java.util.Properties;
 @Service
 public class MemoryService implements WtfService {
     private Neo4JController neo4JController;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public MemoryService() {
         init();
+        setNodeParameterUniq("Language", "eng");
+        setNodeParameterUniq("Word", "value");
     }
 
     public void createLanguage(LanguageDto languageDto) {
         log.info("putLanguage: {}", languageDto);
         String script = "CREATE (:Language{eng:'" + languageDto.getLenguage_eng() +
                 "', origin:'" + languageDto.getLenguage_original() + "'})";
-        neo4JController.createNodes(script, null);
+        neo4JController.executeScript(script, null);
+    }
+
+    private void setNodeParameterUniq(String nodeLabel, String parameter) {
+        log.info("setNodeParameterUniq nodeLebel: {}, parameter: {}", nodeLabel, parameter);
+        try {
+            neo4JController.executeScript("CREATE CONSTRAINT ON (n:" + nodeLabel + ") ASSERT n." + parameter + " IS UNIQUE", null);
+        } catch (Exception e) {
+            log.warn("CONSTRAINT to node: {}, parameter: {}, not created. Reason: {}", nodeLabel, parameter, e.getMessage());
+        }
     }
 
     public void inputLanguageData(String filePath, LanguageDto languageDto) {
@@ -41,7 +55,7 @@ public class MemoryService implements WtfService {
                 log.info(line);
                 String script = "MATCH (l:Language) WHERE l.eng='" + languageDto.getLenguage_eng() + "' WITH l " +
                         "CREATE (:Word {value:'" + line + "'})-[:IS_PART]->(l)";
-                neo4JController.createNodes(script, null);
+                neo4JController.executeScript(script, null);
             }
             reader.close();
 
@@ -61,13 +75,23 @@ public class MemoryService implements WtfService {
         return null;
     }
 
-    public List<LanguageDto> findAll() {
-        log.info("findAll");
+    public List<LanguageDto> getLanguages() {
+        log.info("getLanguages");
+        List<Node> nodes = neo4JController.getNodes("MATCH (l:Language) RETURN l", null);
         List<LanguageDto> list = new ArrayList<>();
-        LanguageDto languageDto = new LanguageDto();
-        languageDto.setLenguage_original("русс");
-        languageDto.setLenguage_eng("eng");
-        list.add(languageDto);
+        for (Node node : nodes) {
+            try {
+                log.info(objectMapper.writeValueAsString(node));
+            } catch (JsonProcessingException e) {
+                log.info(e.getMessage());
+            }
+            LanguageDto languageDto = new LanguageDto();
+            Object original = node.get("origin");
+            languageDto.setLenguage_original(original != null ? original.toString() : null);
+            Object eng = node.get("eng");
+            languageDto.setLenguage_eng(eng != null ? eng.toString() : null);
+            list.add(languageDto);
+        }
         return list;
     }
 
