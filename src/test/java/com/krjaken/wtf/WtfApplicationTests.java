@@ -16,9 +16,9 @@ class WtfApplicationTests {
     }
 
     private void initNeo4J() {
-        neo4JController = new Neo4JController(System.getProperty("neo4jUrl"),
-                System.getProperty("neo4jUser"),
-                System.getProperty("neo4jPassword"));
+//        neo4JController = new Neo4JController(System.getProperty("neo4jUrl"),
+//                System.getProperty("neo4jUser"),
+//                System.getProperty("neo4jPassword"));
     }
 
 }

@@ -22,6 +22,6 @@ public class LanguageDto {
 
     @Override
     public String toString() {
-        return "Language [lenguage_eng=" + lenguage_eng + ", lenguage_original=" + lenguage_original + "]";
+        return "Language{eng:'" + lenguage_eng + "', origin:'" + lenguage_original + "'}";
     }
 }

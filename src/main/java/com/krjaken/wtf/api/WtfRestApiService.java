@@ -1,6 +1,8 @@
 package com.krjaken.wtf.api;
 
 import com.krjaken.wtf.api.core.enums.LanguageEnum;
+import com.krjaken.wtf.core.curiosity.CuriosityCore;
+import com.krjaken.wtf.core.languages.dtos.ConceptDto;
 import com.krjaken.wtf.core.memory.MemoryService;
 import com.krjaken.wtf.core.memory.db.dtos.LanguageDto;
 import io.swagger.annotations.ApiOperation;
@@ -26,9 +28,11 @@ import java.util.List;
 public class WtfRestApiService {
     private static final String UPLOADED_FOLDER = "src/main/resources/files/";
     private MemoryService memoryService;
+    private CuriosityCore curiosityCore;
 
-    public WtfRestApiService(MemoryService memoryService) {
+    public WtfRestApiService(MemoryService memoryService, CuriosityCore curiosityCore) {
         this.memoryService = memoryService;
+        this.curiosityCore = curiosityCore;
     }
 
     @ApiOperation(value = "View a list of available employees", response = List.class)
@@ -60,6 +64,34 @@ public class WtfRestApiService {
         }
         memoryService.createLanguage(languageDto);
         return new ResponseEntity<>("Ok", HttpStatus.OK);
+    }
+
+    @PutMapping("/putWordAnalise")
+    public ResponseEntity<?> putWordAnalise() {
+        curiosityCore.searchInfo();
+        return new ResponseEntity<>("Ok", HttpStatus.OK);
+    }
+
+    @PostMapping("/insertConcept")
+    public ResponseEntity<?> pushConcept(ConceptDto conceptDto, LanguageEnum languageEnum) {
+
+        if (languageEnum == null) {
+            return new ResponseEntity("You must select a languageEnum!", HttpStatus.OK);
+        }
+
+        LanguageDto language = memoryService.getLanguage(languageEnum);
+
+        if (language == null) {
+            return new ResponseEntity("Language " + languageEnum + " not insert in DB", HttpStatus.OK);
+        }
+
+        try {
+            memoryService.inputConcept(conceptDto, language);
+            return new ResponseEntity<>("Concept added", HttpStatus.OK);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping("/uploadLanguageFile")

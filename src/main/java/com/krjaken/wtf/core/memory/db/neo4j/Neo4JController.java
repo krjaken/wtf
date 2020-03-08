@@ -3,19 +3,35 @@ package com.krjaken.wtf.core.memory.db.neo4j;
 import lombok.extern.slf4j.Slf4j;
 import org.neo4j.driver.*;
 import org.neo4j.driver.types.Node;
+import org.springframework.stereotype.Service;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.neo4j.driver.Values.parameters;
 
+@Service
 @Slf4j
 public class Neo4JController implements AutoCloseable {
-    private final Driver driver;
+    private Driver driver = null;
 
-    public Neo4JController(String uri, String user, String password) {
-        driver = GraphDatabase.driver(uri, AuthTokens.basic(user, password));
+    public Neo4JController() {
+        log.info("init Neo4J");
+        try {
+            InputStream input = new FileInputStream("src/main/resources/core/db/dataBase.properties");
+            Properties prop = new Properties();
+            prop.load(input);
+            String n4jUrl = prop.getProperty("neo4jUrl");
+            String neo4jUser = prop.getProperty("neo4jUser");
+            String neo4jPassword = prop.getProperty("neo4jPassword");
+            driver = GraphDatabase.driver(n4jUrl, AuthTokens.basic(neo4jUser, neo4jPassword));
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
     @Override

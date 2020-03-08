@@ -3,6 +3,7 @@ package com.krjaken.wtf.core.memory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.krjaken.wtf.api.core.enums.LanguageEnum;
+import com.krjaken.wtf.core.languages.dtos.ConceptDto;
 import com.krjaken.wtf.core.memory.db.dtos.LanguageDto;
 import com.krjaken.wtf.core.memory.db.neo4j.Neo4JController;
 import com.krjaken.wtf.interaces.WtfService;
@@ -10,11 +11,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.neo4j.driver.types.Node;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 
 @Slf4j
@@ -23,16 +26,15 @@ public class MemoryService implements WtfService {
     private Neo4JController neo4JController;
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    public MemoryService() {
-        init();
+    public MemoryService(Neo4JController neo4JController) {
+        this.neo4JController = neo4JController;
         setNodeParameterUniq("Language", "eng");
         setNodeParameterUniq("Word", "value");
     }
 
     public void createLanguage(LanguageDto languageDto) {
         log.info("putLanguage: {}", languageDto);
-        String script = "CREATE (:Language{eng:'" + languageDto.getLenguage_eng() +
-                "', origin:'" + languageDto.getLenguage_original() + "'})";
+        String script = String.format("CREATE (:%s)", languageDto);
         neo4JController.executeScript(script, null);
     }
 
@@ -63,6 +65,18 @@ public class MemoryService implements WtfService {
             log.error(e.getMessage());
             log.error(String.format("Exception occurred trying to read '%s'.", rusFile));
         }
+    }
+
+    public void inputConcept(ConceptDto conceptDto, LanguageDto languageDto) {
+        log.info("inputConcept run conceptDto: {}, language: {}", conceptDto, languageDto);
+        String script = "MATCH (l:Language) WHERE l.eng='" + languageDto.getLenguage_eng() + "' WITH l " +
+                String.format("CREATE (concept:Concept %s)", conceptDto.createCypherScript()) + "-[:IS_PART]->(l) ";
+        log.info(script);
+        if (conceptDto.getPrototype()!=null){
+            script+="MATCH (prototype:Concept) WHERE prototype.conceptExample ='"+conceptDto.getPrototype().getConceptExample()+"' WITH prototype " +
+                    "CREATE (concept)-[:PROTOTYPE]->(prototype) ";
+        }
+        neo4JController.executeScript(script, null);
     }
 
     public LanguageDto getLanguage(LanguageEnum languageEnum) {
@@ -96,18 +110,7 @@ public class MemoryService implements WtfService {
     }
 
     public void init() {
-        log.info("init Neo4J");
-        try {
-            InputStream input = new FileInputStream("src/main/resources/core/db/dataBase.properties");
-            Properties prop = new Properties();
-            prop.load(input);
-            String n4jUrl = prop.getProperty("neo4jUrl");
-            String neo4jUser = prop.getProperty("neo4jUser");
-            String neo4jPassword = prop.getProperty("neo4jPassword");
-            neo4JController = new Neo4JController(n4jUrl, neo4jUser, neo4jPassword);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
+
     }
 
     public void down() {
