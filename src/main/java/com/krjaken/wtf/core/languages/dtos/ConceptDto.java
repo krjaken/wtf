@@ -6,19 +6,18 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Data
 public class ConceptDto {
+    private Integer id;
     private String conceptExample;
-    private ConceptDto prototype;
-    private List<ConceptDto> value;
-    private List<ConceptDto> synonyms;
-    private List<ConceptDto> antonyms;
-
+    private String prototype;
+    private Map<String, List<ConceptDto>> parameters;
 
     public String createCypherScript() {
-        return "Concept{conceptExample:'" + conceptExample + "', prototype:'" + prototype.conceptExample + "'}";
+        return "Concept{conceptExample:'" + conceptExample + "'" + (prototype != null ? ", prototype:'" + prototype + "'}" : "}");
     }
 
     @Override

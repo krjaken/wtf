@@ -73,7 +73,7 @@ public class WtfRestApiService {
     }
 
     @PostMapping("/insertConcept")
-    public ResponseEntity<?> pushConcept(ConceptDto conceptDto, LanguageEnum languageEnum) {
+    public ResponseEntity<?> pushConcept(LanguageEnum languageEnum, @RequestBody ConceptDto conceptDto) {
 
         if (languageEnum == null) {
             return new ResponseEntity("You must select a languageEnum!", HttpStatus.OK);

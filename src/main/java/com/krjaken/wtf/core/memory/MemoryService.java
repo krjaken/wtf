@@ -29,7 +29,7 @@ public class MemoryService implements WtfService {
     public MemoryService(Neo4JController neo4JController) {
         this.neo4JController = neo4JController;
         setNodeParameterUniq("Language", "eng");
-        setNodeParameterUniq("Word", "value");
+        setNodeParameterUniq("Concept", "conceptExample");
     }
 
     public void createLanguage(LanguageDto languageDto) {
@@ -68,14 +68,16 @@ public class MemoryService implements WtfService {
     }
 
     public void inputConcept(ConceptDto conceptDto, LanguageDto languageDto) {
-        log.info("inputConcept run conceptDto: {}, language: {}", conceptDto, languageDto);
+        log.info("inputConcept run conceptDto: {}, language: {}", conceptDto.createCypherScript(), languageDto);
         String script = "MATCH (l:Language) WHERE l.eng='" + languageDto.getLenguage_eng() + "' WITH l " +
-                String.format("CREATE (concept:Concept %s)", conceptDto.createCypherScript()) + "-[:IS_PART]->(l) ";
-        log.info(script);
-        if (conceptDto.getPrototype()!=null){
-            script+="MATCH (prototype:Concept) WHERE prototype.conceptExample ='"+conceptDto.getPrototype().getConceptExample()+"' WITH prototype " +
-                    "CREATE (concept)-[:PROTOTYPE]->(prototype) ";
+                String.format("CREATE (concept: %s)", conceptDto.createCypherScript()) + "-[:IS_PART]->(l) ";
+        if (conceptDto.getPrototype() != null) {
+            script += "WITH concept" +
+                    " MERGE " + String.format("(:Concept {conceptExample: '%s'})", conceptDto.getPrototype()) + "-[:IS_PART]->(l)  WITH concept" +
+                    " MATCH (prototype:Concept) WHERE prototype.conceptExample ='" + conceptDto.getPrototype() + "' WITH prototype, concept " +
+                    " CREATE (prototype)-[:PROTOTYPE]->(concept) ";
         }
+        log.info(script);
         neo4JController.executeScript(script, null);
     }
 
