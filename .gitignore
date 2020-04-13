@@ -29,5 +29,5 @@ build/
 
 ### VS Code ###
 .vscode/
-/src/main/resources/core/db/dataBase.properties
 /src/main/resources/files
+/src/main/resources/core/applicationConfig.properties
