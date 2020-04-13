@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -50,17 +51,17 @@ public class WtfRestApiService {
         try {
             languages = memoryService.getLanguages();
         } catch (Exception e) {
-            return new ResponseEntity("Find languages error", HttpStatus.CONFLICT);
+            return new ResponseEntity("Find languages error", HttpStatus.BAD_REQUEST);
         }
 
         return new ResponseEntity<List<LanguageDto>>(languages, HttpStatus.OK);
     }
 
-    @PutMapping("/putLenguage")
+    @PutMapping("/putLanguage")
     public ResponseEntity<?> putLanguage(LanguageDto languageDto) {
 
         if (languageDto == null) {
-            return new ResponseEntity("Please fill all fields LegalDto", HttpStatus.OK);
+            return new ResponseEntity<>("Please fill LegalDto", HttpStatus.BAD_REQUEST);
         }
         memoryService.createLanguage(languageDto);
         return new ResponseEntity<>("Ok", HttpStatus.OK);
@@ -72,25 +73,35 @@ public class WtfRestApiService {
         return new ResponseEntity<>("Ok", HttpStatus.OK);
     }
 
-    @PostMapping("/insertConcept")
-    public ResponseEntity<?> pushConcept(LanguageEnum languageEnum, @RequestBody ConceptDto conceptDto) {
-
-        if (languageEnum == null) {
-            return new ResponseEntity("You must select a languageEnum!", HttpStatus.OK);
+    @PostMapping("/concept/linkConceptToProperty")
+    public ResponseEntity<?> linkConceptToPrototype(@RequestBody Map<String, String> link) {
+        if (link.isEmpty()) {
+            return new ResponseEntity<>("Data is empty", HttpStatus.BAD_REQUEST);
         }
+        memoryService.setConceptPrototype(link);
+        return new ResponseEntity<>("Ok", HttpStatus.OK);
+    }
 
-        LanguageDto language = memoryService.getLanguage(languageEnum);
+    @PostMapping("/concept/addProperty")
+    public ResponseEntity<?> addProperty(String conceptExample, @RequestBody Map<String, String> property) {
+        memoryService.addConceptProperty(conceptExample, property);
+        return new ResponseEntity<>("OK", HttpStatus.OK);
+    }
 
-        if (language == null) {
-            return new ResponseEntity("Language " + languageEnum + " not insert in DB", HttpStatus.OK);
-        }
-
-        try {
-            memoryService.inputConcept(conceptDto, language);
-            return new ResponseEntity<>("Concept added", HttpStatus.OK);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    @PostMapping("/concept/insertConcept")
+    public ResponseEntity<?> insertConcept(LanguageEnum languageEnum, @RequestBody ConceptDto conceptDto) {
+        log.info("insertConcept languageEnum: {}, concept: {}", languageEnum.name(), conceptDto);
+        ResponseEntity<LanguageDto> responseEntity = checkLanguage(languageEnum);
+        if (responseEntity.hasBody()) {
+            try {
+                memoryService.inputConcept(conceptDto, responseEntity.getBody());
+                return new ResponseEntity<>("Concept added", HttpStatus.OK);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            return new ResponseEntity("Please select language", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -99,30 +110,36 @@ public class WtfRestApiService {
         log.info("createRussianLanguage {}", languageEnum);
 
         if (uploadfile.isEmpty()) {
-            return new ResponseEntity("You must select a file!", HttpStatus.OK);
+            return new ResponseEntity<>("You must select a file!", HttpStatus.OK);
         }
 
+        ResponseEntity<LanguageDto> languageDtoResponseEntity = checkLanguage(languageEnum);
+        if (languageDtoResponseEntity.hasBody()) {
+            try {
+                saveUploadedFiles(Arrays.asList(uploadfile));
+                memoryService.inputLanguageData(UPLOADED_FOLDER + "/" + uploadfile.getOriginalFilename(), languageDtoResponseEntity.getBody());
+                return new ResponseEntity<>("Successfully uploaded - " + uploadfile.getOriginalFilename(), new HttpHeaders(),
+                        HttpStatus.OK);
+            } catch (IOException e) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            return languageDtoResponseEntity;
+        }
+    }
+
+
+    private ResponseEntity<LanguageDto> checkLanguage(LanguageEnum languageEnum) {
         if (languageEnum == null) {
-            return new ResponseEntity("You must select a languageEnum!", HttpStatus.OK);
+            return new ResponseEntity("Please select language", HttpStatus.BAD_REQUEST);
         }
 
         LanguageDto language = memoryService.getLanguage(languageEnum);
 
-        if (language == null) {
-            return new ResponseEntity("Language " + languageEnum + " not insert in DB", HttpStatus.OK);
+        if (language != null) {
+            return new ResponseEntity<LanguageDto>(language, HttpStatus.OK);
         }
-
-        try {
-
-            saveUploadedFiles(Arrays.asList(uploadfile));
-            memoryService.inputLanguageData(UPLOADED_FOLDER + "/" + uploadfile.getOriginalFilename(), language);
-
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
-        return new ResponseEntity("Successfully uploaded - " + uploadfile.getOriginalFilename(), new HttpHeaders(),
-                HttpStatus.OK);
+        return new ResponseEntity("SGW", HttpStatus.BAD_REQUEST);
     }
 
     private void saveUploadedFiles(List<MultipartFile> files) throws IOException {

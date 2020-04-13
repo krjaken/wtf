@@ -1,9 +1,9 @@
 package com.krjaken.wtf;
 
 import com.krjaken.wtf.core.memory.db.neo4j.Neo4JController;
-import org.junit.Assert;
-import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 @SpringBootTest
 class WtfApplicationTests {

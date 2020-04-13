@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -79,6 +80,20 @@ public class MemoryService implements WtfService {
         }
         log.info(script);
         neo4JController.executeScript(script, null);
+    }
+
+    public void setConceptPrototype(Map<String, String> conceptPrototype) {
+        StringBuilder script = new StringBuilder();
+        for (Map.Entry<String, String> entry : conceptPrototype.entrySet()) {
+            script.append("MATCH (concept:Concept) WHERE concept.conceptExample ='").append(entry.getKey())
+                    .append("' WITH concept ").append("MATCH (prototype:Concept) WHERE prototype.conceptExample ='")
+                    .append(entry.getValue()).append("' WITH prototype, concept ").append(" CREATE (prototype)-[:PROTOTYPE]->(concept)");
+            neo4JController.executeScript(script.toString(), null);
+        }
+    }
+
+    public void addConceptProperty(String conceptExample, Map<String, String> property){
+
     }
 
     public LanguageDto getLanguage(LanguageEnum languageEnum) {
