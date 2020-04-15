@@ -1,14 +1,11 @@
 package cucumber;
 
-
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.cucumber.java8.En;
-import io.cucumber.testng.CucumberOptions;
 
-
-public class MyStepdefs implements En {
+public class SteapDeff implements En {
     @Given("I do something here")
     public void iDoSomethingHere() {
         System.out.println("iDoSomethingHere");
